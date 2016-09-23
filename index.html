@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试</title>
+    <style type="text/css">
+    body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;}
+table{border-collapse:collapse;border-spacing:0;}
+fieldset,img{border:0;}
+address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:400;}
+li{list-style:none;}
+caption,th{text-align:left;}
+h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:400;}
+q:before,q:after{content:'';}
+abbr,acronym{border:0;font-variant:normal;}
+sup{vertical-align:text-top;}
+sub{vertical-align:text-bottom;}
+input,textarea,select{font-family:inherit;font-weight:inherit;font-size:100%;}
+legend{color:#000;}
+        .title{width: 500px;height: 50px;line-height: 50px;font-size: 35px;text-align: center;}
+        #showarea{
+            width: 500px;height: 500px;background: black;overflow: auto;background-image: url('./bg.jpg');
+        }
+        #showarea{word-break:break-all; word-wrap:break-word ;}
+        .me{padding: 5px;border: 1px solid #4CAF50;background: #4CAF50;border-radius: 4px;margin: 5px 0 0 357px;width: 100px;color: #3B2424;}
+        .get{padding: 5px;border: 1px solid #DEDEDE;background: #FFF;border-radius: 4px;margin: 5px;width: 100px;color: #3B2424;}
+        #input{width: 400px;height: 63px;border-top-width: 0px;border-color: #cdcdcd;}
+        #btn{height: 57px;width: 87px;margin-left: -2px;cursor: pointer;}
+    </style>
+</head>
+<body>
+    <!--展示弹幕区域-->
+    <div class="title">实时聊天室</div>
+    <div id="showarea"></div>
+    <input type="input" id="input"></input>
+    <input type="button" value="发送" id="btn">
+    <input type="hidden" placeholder="请输入ID号码" id="senderid">
+   
+</body>
+</html>
+<script type="text/javascript" src="./jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+
+    var v = parseInt(10*Math.random());
+    $('#senderid').val(v);
+
+    $("#btn").click(function(){
+        sendMess();
+    })
+    function sendMess(){
+        // 临时获取id的方式
+        var id = $('#senderid').val();
+        if(!id){alert('id为空');return false;}
+
+        var value = $('#input').val();
+        if(value == ''){return false;}
+        $('#input').val('');
+        var html = '<p class="me">'+value+'</p>';
+        $('#showarea').append(html);
+        // 有最新消息时候滚动条在最下方
+        var div = document.getElementById('showarea');
+        div.scrollTop = div.scrollHeight;;       
+        // 发送服务器
+        $.post('./insertMess.php',{sender:id,message:value},function(data){
+            if(data == 1){
+                console.log(value+' send ok!');
+            }else{
+                console.log(value+' send ERROR!');
+            }
+        })
+    }
+</script>
+<script type="text/javascript">
+    // 这个id在生成的时候就要生成
+    var id = $('#senderid').val();
+    // SSE获取最新消息
+    if(typeof(EventSource) !== "undefined") {
+        var source = new EventSource("getMess.php?id="+id);
+        source.onmessage = function(event) {
+            var obj = eval('('+ event.data +')');
+            $.each(obj , function(n , item){
+                var html = '<p class="get">'+item.sender+'说:'+item.message+'</p>';
+                $('#showarea').append(html);
+                var div = document.getElementById('showarea');
+                div.scrollTop = div.scrollHeight;
+            })
+            
+        };
+    } else {
+        document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events...";
+    }
+</script>
+
+<script type="text/javascript">
+      document.onkeydown=function(event){
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if(e && e.keyCode==27){ // 按 Esc 
+                //清空聊天内容
+                $('#showarea p').each(function(){
+                    $(this).remove();
+                })
+              }
+            if(e && e.keyCode==113){ // 按 F2 
+                //要做的事情
+               }            
+             if(e && e.keyCode==13){ // enter 键
+                // 发送消息
+                sendMess();
+            }
+        }; 
+</script>
