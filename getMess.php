@@ -15,15 +15,8 @@
     mysql_query("set names 'utf8'"); //数据库输出编码 应该与你的数据库编码保持一致.
      
     mysql_select_db($mysql_database); //打开数据库
-    $sql = 'select * from danmu where addtime >= '.(getMillisecond()-1000).'  and sender !='.$_GET['id'];
-    $i = 0;
-    do{
-        // 查询结果为空，继续查询 3毫秒
-        // $i != 0 ? usleep(10*1000) : $i++;        
-        $result = mysql_query($sql);
-        $num_rows = mysql_num_rows($result);
-    }while($num_rows == 0);    
-    
+    $sql = 'select * from danmu where addtime >= '.(time()-3).'  and sender !='.$_GET['id'];   
+    $result = mysql_query($sql);    
     while ($row = mysql_fetch_array($result , MYSQL_ASSOC)) {
        $res[] = $row;
     }
@@ -36,10 +29,6 @@
     flush();
     mysql_close();
 
-    function getMillisecond() {
-        list($t1, $t2) = explode(' ', microtime());
-        return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
-    }
     
 
    

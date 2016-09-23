@@ -16,14 +16,9 @@
     $sender = $_POST['sender'];
     $message = $_POST['message'];
 
-    $sql = 'INSERT INTO danmu(sender , message , addtime) VALUES('.$sender.',"'.$message.'",'.getMillisecond().')';
+    $sql = 'INSERT INTO danmu(sender , message , addtime) VALUES('.$sender.',"'.$message.'",'.time().')';
     $res = mysql_query($sql);
     if($res){
         echo 1;
     }
     mysql_close();
-
-    function getMillisecond() {
-        list($t1, $t2) = explode(' ', microtime());
-        return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
-    }
